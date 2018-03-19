@@ -63,17 +63,17 @@ def create_app(config=None, testing=False):
         admin = Admin(
             app, name='Airflow',
             static_url_path='/admin',
-            index_view=views.HomeView(endpoint='', url='/admin', name="DAGs"),
+            index_view=views.HomeView(endpoint='', url='/admin', name="Dags"),
             template_mode='bootstrap3',
         )
         av = admin.add_view
         vs = views
-        av(vs.Airflow(name='DAGs', category='DAGs'))
+        av(vs.Airflow(name='Dags', category='Dags'))
 
         av(vs.DagRunModelView(
-            models.DagRun, Session, name="Dag Instances", category="Browse"))
+            models.DagRun, Session, name="Dag Runs", category="Browse"))
         av(vs.TaskInstanceModelView(models.TaskInstance,
-            Session, name="Task Instances", category="Browse"))
+            Session, name="Task Runs", category="Browse"))
 
 
         av(vs.PoolModelView(
@@ -103,12 +103,9 @@ def create_app(config=None, testing=False):
             models.KnownEvent,
             Session, name="Known Events", category="Data Profiling"))
 
-        admin.add_link(base.MenuLink(
-            category='Docs', name='Documentation',
-            url='http://pythonhosted.org/airflow/'))
-        admin.add_link(
-            base.MenuLink(category='Docs',
-                name='Github',url='https://github.com/airbnb/airflow'))
+        
+        # admin.add_link(base.MenuLink( category='Docs', name='Documentation',  url='http://pythonhosted.org/airflow/'))
+        # admin.add_link(base.MenuLink(category='Docs', name='Github',url='https://github.com/airbnb/airflow'))
 
         #av(vs.VersionView(name='Version', category="Docs"))
 

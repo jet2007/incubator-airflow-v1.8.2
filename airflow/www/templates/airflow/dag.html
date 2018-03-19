@@ -233,6 +233,20 @@
               Downstream
             </button>
           </span>
+
+          <hr/>
+          <button id="btn_kill" type="button" class="btn btn-primary"
+            title="Kills a single task instance">
+            Kill
+          </button>
+          <span class="btn-group">
+            <button id="btn_kill_ignore_all"
+              type="button" class="btn" data-toggle="button"
+              title="Ignores all non-critical, including task state and task_deps"
+              >Ignore All</button>
+          </span>
+
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">
@@ -367,6 +381,19 @@ function updateQueryStringParameter(uri, key, value) {
 
       window.location = url;
     });
+
+    $("#btn_kill").click(function(){
+      url = "{{ url_for('airflow.taskkill') }}" +
+        "?task_id=" + encodeURIComponent(task_id) +
+        "&dag_id=" + encodeURIComponent(dag_id) +
+        "&execution_date=" + execution_date +
+        "&origin=" + encodeURIComponent(window.location);
+
+      window.location = url;
+    });
+
+
+
 
     $("#btn_gantt").click(function(){
       url = "{{ url_for('airflow.gantt') }}" +

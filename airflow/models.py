@@ -1498,6 +1498,292 @@ class TaskInstance(Base):
         yesterday_ds_nodash = yesterday_ds.replace('-', '')
         tomorrow_ds_nodash = tomorrow_ds.replace('-', '')
 
+        # 增加自定义的参数
+        from dateutil.relativedelta import relativedelta
+        current_date=datetime.now()
+
+        import uuid
+        uuid1 = str(uuid.uuid4())
+        uuid1_nodash = str(uuid.uuid4()).replace('-', '')
+        execution_date=self.execution_date
+        execution_dates= {   
+                             'exec_dt_today' : (execution_date).strftime("%Y-%m-%d")
+                            ,'exec_dt_yesterday' : (execution_date + relativedelta(days=-1)).strftime("%Y-%m-%d")
+                            ,'exec_dt_tomorrow' : (execution_date + relativedelta(days=+1)).strftime("%Y-%m-%d") 
+
+                            ,'exec_dm_today' : (execution_date).strftime("%Y-%m-%d %H:%M:%S")
+                            ,'exec_dm_yesterday' : (execution_date + relativedelta(days=-1)).strftime("%Y-%m-%d %H:%M:%S")
+                            ,'exec_dm_tomorrow' : (execution_date + relativedelta(days=+1)).strftime("%Y-%m-%d %H:%M:%S") 
+                            ,'exec_tm_today' : (execution_date).strftime("%H:%M:%S")
+
+                            ,'exec_dm_nodash_today' : (execution_date).strftime("%Y%m%d%H%M%S")
+                            ,'exec_dm_nodash_yesterday' : (execution_date + relativedelta(days=-1)).strftime("%Y%m%d%H%M%S")
+                            ,'exec_dm_nodash_tomorrow' : (execution_date + relativedelta(days=+1)).strftime("%Y%m%d%H%M%S") 
+                            ,'exec_tm_nodash_today' : (execution_date).strftime("%H%M%S")
+
+                            # 日期
+                            ,'exec_dt_prev_2day' : (execution_date + relativedelta(days=-2)).strftime("%Y-%m-%d")
+                            ,'exec_dt_prev_3day' : (execution_date + relativedelta(days=-3)).strftime("%Y-%m-%d")
+                            ,'exec_dt_prev_7day' : (execution_date + relativedelta(days=-7)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_prev_14day' : (execution_date + relativedelta(days=-14)).strftime("%Y-%m-%d") 
+
+                            ,'exec_dt_this_month_firstday' : (execution_date + relativedelta(day=1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_this_month_lastday' : (execution_date + relativedelta(day=1,months=+1,days=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_prev_month_firstday' : (execution_date + relativedelta(day=1,months=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_prev_month_lastday' : (execution_date + relativedelta(day=1,days=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_prev_month_today' : (execution_date + relativedelta(months=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_prev_3month_firstday' : (execution_date + relativedelta(day=1,months=-3)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_prev_3month_lastday' : (execution_date + relativedelta(day=1,months=-2,days=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_prev_3month_today' : (execution_date + relativedelta(months=-3)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_next_month_firstday' : (execution_date + relativedelta(day=1,months=+1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_next_month_lastday' : (execution_date + relativedelta(day=1,months=+2,days=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_next_month_today' : (execution_date + relativedelta(months=+1)).strftime("%Y-%m-%d")  
+                            ,'exec_dt_next_3month_firstday' : (execution_date + relativedelta(day=1,months=+3)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_next_3month_lastday' : (execution_date + relativedelta(day=1,months=+4,days=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_next_3month_today' : (execution_date + relativedelta(months=+3)).strftime("%Y-%m-%d") 
+
+                            ,'exec_dt_this_year_firstday' : (execution_date + relativedelta(day=1,month=1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_this_year_lastday' : (execution_date + relativedelta(day=1,month=1,years=+1,days=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_next_year_firstday' : (execution_date + relativedelta(day=1,month=1,years=+1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_next_year_lastday' : (execution_date + relativedelta(day=1,month=1,years=+1,days=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_next_year_today' : (execution_date + relativedelta(years=+1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_next_year_prev_month_today' : (execution_date + relativedelta(years=+1,months=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_next_year_next_month_today' : (execution_date + relativedelta(years=+1,months=+1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_prev_year_firstday' : (execution_date + relativedelta(day=1,month=1,years=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_prev_year_lastday' : (execution_date + relativedelta(day=1,month=1,days=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_prev_year_today' : (execution_date + relativedelta(years=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_prev_year_prev_month_today' : (execution_date + relativedelta(years=-1,months=-1)).strftime("%Y-%m-%d") 
+                            ,'exec_dt_prev_year_next_month_today' : (execution_date + relativedelta(years=-1,months=+1)).strftime("%Y-%m-%d") 
+
+                            # 月份
+                            ,'exec_mn_this_month' : (execution_date).strftime("%Y-%m")
+                            ,'exec_mn_prev_month' : (execution_date + relativedelta(months=-1)).strftime("%Y-%m")
+                            ,'exec_mn_prev_2month' : (execution_date + relativedelta(months=-2)).strftime("%Y-%m")
+                            ,'exec_mn_prev_3month' : (execution_date + relativedelta(months=-3)).strftime("%Y-%m")
+                            ,'exec_mn_prev_6month' : (execution_date + relativedelta(months=-6)).strftime("%Y-%m")
+                            ,'exec_mn_next_month' : (execution_date + relativedelta(months=+1)).strftime("%Y-%m")
+                            ,'exec_mn_next_2month' : (execution_date + relativedelta(months=+2)).strftime("%Y-%m")
+                            ,'exec_mn_next_3month' : (execution_date + relativedelta(months=+3)).strftime("%Y-%m")
+                            ,'exec_mn_next_6month' : (execution_date + relativedelta(months=+6)).strftime("%Y-%m") 
+                            ,'exec_mn_prev_year_this_month' : (execution_date + relativedelta(years=-1)).strftime("%Y-%m")
+                            ,'exec_mn_prev_year_prev_month' : (execution_date + relativedelta(years=-1,months=-1)).strftime("%Y-%m")
+                            ,'exec_mn_prev_year_next_month' : (execution_date + relativedelta(years=-1,months=+1)).strftime("%Y-%m")
+                            ,'exec_mn_next_year_this_month' : (execution_date + relativedelta(years=+1)).strftime("%Y-%m")
+                            ,'exec_mn_next_year_prev_month' : (execution_date + relativedelta(years=+1,months=-1)).strftime("%Y-%m")
+                            ,'exec_mn_next_year_next_month' : (execution_date + relativedelta(years=+1,months=+1)).strftime("%Y-%m")
+
+                            # 年份
+                            ,'exec_yr_prev_year' : (execution_date + relativedelta(years=-1)).strftime("%Y")
+                            ,'exec_yr_prev_2year' : (execution_date + relativedelta(years=-2)).strftime("%Y")
+                            ,'exec_yr_prev_3year' : (execution_date + relativedelta(years=-3)).strftime("%Y")
+                            ,'exec_yr_next_year' : (execution_date + relativedelta(years=+1)).strftime("%Y")
+                            ,'exec_yr_next_2year' : (execution_date + relativedelta(years=+2)).strftime("%Y")
+                            ,'exec_yr_next_3year' : (execution_date + relativedelta(years=+3)).strftime("%Y")
+
+
+                            # 无符号形式
+                            ,'exec_dt_nodash_today' : (execution_date).strftime("%Y%m%d")
+                            ,'exec_dt_nodash_yesterday' : (execution_date + relativedelta(days=-1)).strftime("%Y%m%d")
+                            ,'exec_dt_nodash_tomorrow' : (execution_date + relativedelta(days=+1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_2day' : (execution_date + relativedelta(days=-2)).strftime("%Y%m%d")
+                            ,'exec_dt_nodash_prev_3day' : (execution_date + relativedelta(days=-3)).strftime("%Y%m%d")
+                            ,'exec_dt_nodash_prev_7day' : (execution_date + relativedelta(days=-7)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_14day' : (execution_date + relativedelta(days=-14)).strftime("%Y%m%d") 
+
+                            ,'exec_dt_nodash_this_month_firstday' : (execution_date + relativedelta(day=1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_this_month_lastday' : (execution_date + relativedelta(day=1,months=+1,days=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_month_firstday' : (execution_date + relativedelta(day=1,months=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_month_lastday' : (execution_date + relativedelta(day=1,days=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_month_today' : (execution_date + relativedelta(months=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_3month_firstday' : (execution_date + relativedelta(day=1,months=-3)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_3month_lastday' : (execution_date + relativedelta(day=1,months=-2,days=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_3month_today' : (execution_date + relativedelta(months=-3)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_next_month_firstday' : (execution_date + relativedelta(day=1,months=+1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_next_month_lastday' : (execution_date + relativedelta(day=1,months=+2,days=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_next_month_today' : (execution_date + relativedelta(months=+1)).strftime("%Y%m%d")  
+                            ,'exec_dt_nodash_next_3month_firstday' : (execution_date + relativedelta(day=1,months=+3)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_next_3month_lastday' : (execution_date + relativedelta(day=1,months=+4,days=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_next_3month_today' : (execution_date + relativedelta(months=+3)).strftime("%Y%m%d") 
+
+                            ,'exec_dt_nodash_this_year_firstday' : (execution_date + relativedelta(day=1,month=1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_this_year_lastday' : (execution_date + relativedelta(day=1,month=1,years=+1,days=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_next_year_firstday' : (execution_date + relativedelta(day=1,month=1,years=+1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_next_year_lastday' : (execution_date + relativedelta(day=1,month=1,years=+1,days=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_next_year_today' : (execution_date + relativedelta(years=+1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_next_year_prev_month_today' : (execution_date + relativedelta(years=+1,months=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_next_year_next_month_today' : (execution_date + relativedelta(years=+1,months=+1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_year_firstday' : (execution_date + relativedelta(day=1,month=1,years=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_year_lastday' : (execution_date + relativedelta(day=1,month=1,days=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_year_today' : (execution_date + relativedelta(years=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_year_prev_month_today' : (execution_date + relativedelta(years=-1,months=-1)).strftime("%Y%m%d") 
+                            ,'exec_dt_nodash_prev_year_next_month_today' : (execution_date + relativedelta(years=-1,months=+1)).strftime("%Y%m%d") 
+
+                            ,'exec_mn_nodash_this_month' : (execution_date).strftime("%Y%m")
+                            ,'exec_mn_nodash_prev_month' : (execution_date + relativedelta(months=-1)).strftime("%Y%m")
+                            ,'exec_mn_nodash_prev_2month' : (execution_date + relativedelta(months=-2)).strftime("%Y%m")
+                            ,'exec_mn_nodash_prev_3month' : (execution_date + relativedelta(months=-3)).strftime("%Y%m")
+                            ,'exec_mn_nodash_prev_6month' : (execution_date + relativedelta(months=-6)).strftime("%Y%m")
+                            ,'exec_mn_nodash_next_month' : (execution_date + relativedelta(months=+1)).strftime("%Y%m")
+                            ,'exec_mn_nodash_next_2month' : (execution_date + relativedelta(months=+2)).strftime("%Y%m")
+                            ,'exec_mn_nodash_next_3month' : (execution_date + relativedelta(months=+3)).strftime("%Y%m")
+                            ,'exec_mn_nodash_next_6month' : (execution_date + relativedelta(months=+6)).strftime("%Y%m") 
+                            ,'exec_mn_nodash_prev_year_this_month' : (execution_date + relativedelta(years=-1)).strftime("%Y%m")
+                            ,'exec_mn_nodash_prev_year_prev_month' : (execution_date + relativedelta(years=-1,months=-1)).strftime("%Y%m")
+                            ,'exec_mn_nodash_prev_year_next_month' : (execution_date + relativedelta(years=-1,months=+1)).strftime("%Y%m")
+                            ,'exec_mn_nodash_next_year_this_month' : (execution_date + relativedelta(years=+1)).strftime("%Y%m")
+                            ,'exec_mn_nodash_next_year_prev_month' : (execution_date + relativedelta(years=+1,months=-1)).strftime("%Y%m")
+                            ,'exec_mn_nodash_next_year_next_month' : (execution_date + relativedelta(years=+1,months=+1)).strftime("%Y%m")
+                }
+
+        current_dates= {
+                             'curr_dt_today' : (current_date).strftime("%Y-%m-%d")
+                            ,'curr_dt_yesterday' : (current_date + relativedelta(days=-1)).strftime("%Y-%m-%d")
+                            ,'curr_dt_tomorrow' : (current_date + relativedelta(days=+1)).strftime("%Y-%m-%d") 
+
+                            ,'curr_dm_today' : (current_date).strftime("%Y-%m-%d %H:%M:%S")
+                            ,'curr_dm_yesterday' : (current_date + relativedelta(days=-1)).strftime("%Y-%m-%d %H:%M:%S")
+                            ,'curr_dm_tomorrow' : (current_date + relativedelta(days=+1)).strftime("%Y-%m-%d %H:%M:%S") 
+                            ,'curr_tm_today' : (current_date).strftime("%H:%M:%S")
+
+
+
+                            ,'curr_dm_nodash_today' : (current_date).strftime("%Y%m%d%H%M%S")
+                            ,'curr_dm_nodash_yesterday' : (current_date + relativedelta(days=-1)).strftime("%Y%m%d%H%M%S")
+                            ,'curr_dm_nodash_tomorrow' : (current_date + relativedelta(days=+1)).strftime("%Y%m%d%H%M%S") 
+                            ,'curr_tm_nodash_today' : (current_date).strftime("%H%M%S")
+
+
+
+                            # 日期
+                            ,'curr_dt_prev_2day' : (current_date + relativedelta(days=-2)).strftime("%Y-%m-%d")
+                            ,'curr_dt_prev_3day' : (current_date + relativedelta(days=-3)).strftime("%Y-%m-%d")
+                            ,'curr_dt_prev_7day' : (current_date + relativedelta(days=-7)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_prev_14day' : (current_date + relativedelta(days=-14)).strftime("%Y-%m-%d") 
+
+                            ,'curr_dt_this_month_firstday' : (current_date + relativedelta(day=1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_this_month_lastday' : (current_date + relativedelta(day=1,months=+1,days=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_prev_month_firstday' : (current_date + relativedelta(day=1,months=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_prev_month_lastday' : (current_date + relativedelta(day=1,days=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_prev_month_today' : (current_date + relativedelta(months=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_prev_3month_firstday' : (current_date + relativedelta(day=1,months=-3)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_prev_3month_lastday' : (current_date + relativedelta(day=1,months=-2,days=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_prev_3month_today' : (current_date + relativedelta(months=-3)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_next_month_firstday' : (current_date + relativedelta(day=1,months=+1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_next_month_lastday' : (current_date + relativedelta(day=1,months=+2,days=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_next_month_today' : (current_date + relativedelta(months=+1)).strftime("%Y-%m-%d")  
+                            ,'curr_dt_next_3month_firstday' : (current_date + relativedelta(day=1,months=+3)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_next_3month_lastday' : (current_date + relativedelta(day=1,months=+4,days=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_next_3month_today' : (current_date + relativedelta(months=+3)).strftime("%Y-%m-%d") 
+
+                            ,'curr_dt_this_year_firstday' : (current_date + relativedelta(day=1,month=1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_this_year_lastday' : (current_date + relativedelta(day=1,month=1,years=+1,days=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_next_year_firstday' : (current_date + relativedelta(day=1,month=1,years=+1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_next_year_lastday' : (current_date + relativedelta(day=1,month=1,years=+1,days=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_next_year_today' : (current_date + relativedelta(years=+1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_next_year_prev_month_today' : (current_date + relativedelta(years=+1,months=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_next_year_next_month_today' : (current_date + relativedelta(years=+1,months=+1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_prev_year_firstday' : (current_date + relativedelta(day=1,month=1,years=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_prev_year_lastday' : (current_date + relativedelta(day=1,month=1,days=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_prev_year_today' : (current_date + relativedelta(years=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_prev_year_prev_month_today' : (current_date + relativedelta(years=-1,months=-1)).strftime("%Y-%m-%d") 
+                            ,'curr_dt_prev_year_next_month_today' : (current_date + relativedelta(years=-1,months=+1)).strftime("%Y-%m-%d") 
+
+                            # 月份
+                            ,'curr_mn_this_month' : (current_date).strftime("%Y-%m")
+                            ,'curr_mn_prev_month' : (current_date + relativedelta(months=-1)).strftime("%Y-%m")
+                            ,'curr_mn_prev_2month' : (current_date + relativedelta(months=-2)).strftime("%Y-%m")
+                            ,'curr_mn_prev_3month' : (current_date + relativedelta(months=-3)).strftime("%Y-%m")
+                            ,'curr_mn_prev_6month' : (current_date + relativedelta(months=-6)).strftime("%Y-%m")
+                            ,'curr_mn_next_month' : (current_date + relativedelta(months=+1)).strftime("%Y-%m")
+                            ,'curr_mn_next_2month' : (current_date + relativedelta(months=+2)).strftime("%Y-%m")
+                            ,'curr_mn_next_3month' : (current_date + relativedelta(months=+3)).strftime("%Y-%m")
+                            ,'curr_mn_next_6month' : (current_date + relativedelta(months=+6)).strftime("%Y-%m") 
+                            ,'curr_mn_prev_year_this_month' : (current_date + relativedelta(years=-1)).strftime("%Y-%m")
+                            ,'curr_mn_prev_year_prev_month' : (current_date + relativedelta(years=-1,months=-1)).strftime("%Y-%m")
+                            ,'curr_mn_prev_year_next_month' : (current_date + relativedelta(years=-1,months=+1)).strftime("%Y-%m")
+                            ,'curr_mn_next_year_this_month' : (current_date + relativedelta(years=+1)).strftime("%Y-%m")
+                            ,'curr_mn_next_year_prev_month' : (current_date + relativedelta(years=+1,months=-1)).strftime("%Y-%m")
+                            ,'curr_mn_next_year_next_month' : (current_date + relativedelta(years=+1,months=+1)).strftime("%Y-%m")
+
+                            # 年份
+                            ,'curr_yr_prev_year' : (current_date + relativedelta(years=-1)).strftime("%Y")
+                            ,'curr_yr_prev_2year' : (current_date + relativedelta(years=-2)).strftime("%Y")
+                            ,'curr_yr_prev_3year' : (current_date + relativedelta(years=-3)).strftime("%Y")
+                            ,'curr_yr_next_year' : (current_date + relativedelta(years=+1)).strftime("%Y")
+                            ,'curr_yr_next_2year' : (current_date + relativedelta(years=+2)).strftime("%Y")
+                            ,'curr_yr_next_3year' : (current_date + relativedelta(years=+3)).strftime("%Y")
+
+
+                            # 无符号形式
+                            ,'curr_dt_nodash_today' : (current_date).strftime("%Y%m%d")
+                            ,'curr_dt_nodash_yesterday' : (current_date + relativedelta(days=-1)).strftime("%Y%m%d")
+                            ,'curr_dt_nodash_tomorrow' : (current_date + relativedelta(days=+1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_2day' : (current_date + relativedelta(days=-2)).strftime("%Y%m%d")
+                            ,'curr_dt_nodash_prev_3day' : (current_date + relativedelta(days=-3)).strftime("%Y%m%d")
+                            ,'curr_dt_nodash_prev_7day' : (current_date + relativedelta(days=-7)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_14day' : (current_date + relativedelta(days=-14)).strftime("%Y%m%d") 
+
+                            ,'curr_dt_nodash_this_month_firstday' : (current_date + relativedelta(day=1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_this_month_lastday' : (current_date + relativedelta(day=1,months=+1,days=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_month_firstday' : (current_date + relativedelta(day=1,months=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_month_lastday' : (current_date + relativedelta(day=1,days=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_month_today' : (current_date + relativedelta(months=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_3month_firstday' : (current_date + relativedelta(day=1,months=-3)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_3month_lastday' : (current_date + relativedelta(day=1,months=-2,days=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_3month_today' : (current_date + relativedelta(months=-3)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_next_month_firstday' : (current_date + relativedelta(day=1,months=+1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_next_month_lastday' : (current_date + relativedelta(day=1,months=+2,days=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_next_month_today' : (current_date + relativedelta(months=+1)).strftime("%Y%m%d")  
+                            ,'curr_dt_nodash_next_3month_firstday' : (current_date + relativedelta(day=1,months=+3)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_next_3month_lastday' : (current_date + relativedelta(day=1,months=+4,days=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_next_3month_today' : (current_date + relativedelta(months=+3)).strftime("%Y%m%d") 
+
+                            ,'curr_dt_nodash_this_year_firstday' : (current_date + relativedelta(day=1,month=1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_this_year_lastday' : (current_date + relativedelta(day=1,month=1,years=+1,days=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_next_year_firstday' : (current_date + relativedelta(day=1,month=1,years=+1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_next_year_lastday' : (current_date + relativedelta(day=1,month=1,years=+1,days=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_next_year_today' : (current_date + relativedelta(years=+1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_next_year_prev_month_today' : (current_date + relativedelta(years=+1,months=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_next_year_next_month_today' : (current_date + relativedelta(years=+1,months=+1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_year_firstday' : (current_date + relativedelta(day=1,month=1,years=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_year_lastday' : (current_date + relativedelta(day=1,month=1,days=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_year_today' : (current_date + relativedelta(years=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_year_prev_month_today' : (current_date + relativedelta(years=-1,months=-1)).strftime("%Y%m%d") 
+                            ,'curr_dt_nodash_prev_year_next_month_today' : (current_date + relativedelta(years=-1,months=+1)).strftime("%Y%m%d") 
+
+                            ,'curr_mn_nodash_this_month' : (current_date).strftime("%Y%m")
+                            ,'curr_mn_nodash_prev_month' : (current_date + relativedelta(months=-1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_prev_2month' : (current_date + relativedelta(months=-2)).strftime("%Y%m")
+                            ,'curr_mn_nodash_prev_3month' : (current_date + relativedelta(months=-3)).strftime("%Y%m")
+                            ,'curr_mn_nodash_prev_6month' : (current_date + relativedelta(months=-6)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_month' : (current_date + relativedelta(months=+1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_2month' : (current_date + relativedelta(months=+2)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_3month' : (current_date + relativedelta(months=+3)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_6month' : (current_date + relativedelta(months=+6)).strftime("%Y%m") 
+                            ,'curr_mn_nodash_prev_year_this_month' : (current_date + relativedelta(years=-1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_prev_year_prev_month' : (current_date + relativedelta(years=-1,months=-1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_prev_year_next_month' : (current_date + relativedelta(years=-1,months=+1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_year_this_month' : (current_date + relativedelta(years=+1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_year_prev_month' : (current_date + relativedelta(years=+1,months=-1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_year_next_month' : (current_date + relativedelta(years=+1,months=+1)).strftime("%Y%m")
+
+                            ,'curr_mn_nodash_this_month' : (current_date).strftime("%Y%m")
+                            ,'curr_mn_nodash_prev_month' : (current_date + relativedelta(months=-1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_prev_2month' : (current_date + relativedelta(months=-2)).strftime("%Y%m")
+                            ,'curr_mn_nodash_prev_3month' : (current_date + relativedelta(months=-3)).strftime("%Y%m")
+                            ,'curr_mn_nodash_prev_6month' : (current_date + relativedelta(months=-6)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_month' : (current_date + relativedelta(months=+1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_2month' : (current_date + relativedelta(months=+2)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_3month' : (current_date + relativedelta(months=+3)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_6month' : (current_date + relativedelta(months=+6)).strftime("%Y%m") 
+                            ,'curr_mn_nodash_prev_year_this_month' : (current_date + relativedelta(years=-1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_prev_year_prev_month' : (current_date + relativedelta(years=-1,months=-1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_prev_year_next_month' : (current_date + relativedelta(years=-1,months=+1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_year_this_month' : (current_date + relativedelta(years=+1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_year_prev_month' : (current_date + relativedelta(years=+1,months=-1)).strftime("%Y%m")
+                            ,'curr_mn_nodash_next_year_next_month' : (current_date + relativedelta(years=+1,months=+1)).strftime("%Y%m")
+            }
+
         ti_key_str = "{task.dag_id}__{task.task_id}__{ds_nodash}"
         ti_key_str = ti_key_str.format(**locals())
 
@@ -1577,7 +1863,12 @@ class TaskInstance(Base):
             'var': {
                 'value': VariableAccessor(),
                 'json': VariableJsonAccessor()
-            }
+            },
+            'uuid':uuid1,
+            'uuid_nodash':uuid1_nodash,
+            'execution_dates' : execution_dates,
+            'current_date' : current_date
+            'current_dates' : current_dates
         }
 
     def render_templates(self):

@@ -16,6 +16,7 @@
 from past.builtins import basestring, unicode
 
 import os
+import logging
 import pkg_resources
 import socket
 from functools import wraps
@@ -58,7 +59,7 @@ from airflow import models
 from airflow import settings
 from airflow.exceptions import AirflowException
 from airflow.settings import Session
-from airflow.models import XCom, DagRun
+from airflow.models import XCom, DagRun, TaskInstance
 from airflow.ti_deps.dep_context import DepContext, QUEUE_DEPS, SCHEDULER_DEPS
 
 from airflow.models import BaseOperator
@@ -311,6 +312,11 @@ class Airflow(BaseView):
     @login_required
     def index(self):
         return self.render('airflow/dags.html')
+
+
+
+
+
 
     @expose('/chart_data')
     @data_profiling_required
@@ -593,6 +599,11 @@ class Airflow(BaseView):
     @login_required
     def code(self):
         dag_id = request.args.get('dag_id')
+
+        # 增加限制非有权限的用户dagid，不能查看
+        if ( not wwwutils.get_filter_by_user_dagid(dag_id) ) :
+            return render_template('airflow/circles.html', hostname=socket.getfqdn())
+
         dag = dagbag.get_dag(dag_id)
         title = dag_id
         try:
@@ -612,6 +623,11 @@ class Airflow(BaseView):
     @login_required
     def dag_details(self):
         dag_id = request.args.get('dag_id')
+        
+        # 增加限制非有权限的用户dagid，不能查看
+        if ( not wwwutils.get_filter_by_user_dagid(dag_id) ) :
+            return render_template('airflow/circles.html', hostname=socket.getfqdn())
+
         dag = dagbag.get_dag(dag_id)
         title = "DAG details"
 
@@ -1147,12 +1163,83 @@ class Airflow(BaseView):
 
         return response
 
+
+
+    @expose('/taskkill')
+    @login_required
+    @wwwutils.action_logging
+    @wwwutils.notify_owner
+    def taskkill(self):
+        dag_id = request.args.get('dag_id')
+        task_id = request.args.get('task_id')
+        origin = request.args.get('origin')
+        dag = dagbag.get_dag(dag_id)
+        task = dag.get_task(task_id)
+        task.dag = dag
+
+        execution_date = request.args.get('execution_date')
+        execution_date = dateutil.parser.parse(execution_date)
+        confirmed = request.args.get('confirmed') == "true"
+        upstream = request.args.get('upstream') == "false"
+        downstream = request.args.get('downstream') == "false"
+        future = request.args.get('future') == "false"
+        past = request.args.get('past') == "false"
+
+        if not dag:
+            flash("Cannot find DAG: {}".format(dag_id))
+            return redirect(origin)
+
+        if not task:
+            flash("Cannot find task {} in DAG {}".format(task_id, dag.dag_id))
+            return redirect(origin)
+
+        from airflow.api.common.experimental.mark_tasks import set_state
+
+        if confirmed:
+            altered = set_state(task=task, execution_date=execution_date,
+                                upstream=upstream, downstream=downstream,
+                                future=future, past=past, state=State.FAILED,
+                                commit=True)
+
+            flash("Marked failed on {} task instances".format(len(altered)))
+            return redirect(origin)
+
+        to_be_altered = set_state(task=task, execution_date=execution_date,
+                                  upstream=upstream, downstream=downstream,
+                                  future=future, past=past, state=State.FAILED,
+                                  commit=False)
+        logging.warning('######################@22222')
+        logging.warning('task:%s' %task)
+        logging.warning('execution_date:%s' %execution_date)
+        logging.warning('upstream:%s' %upstream)
+        logging.warning('downstream:%s' %downstream)
+        logging.warning('future:%s' %future)
+        logging.warning('past:%s' %past)
+        logging.warning(to_be_altered)
+        logging.warning('######################@22222')
+
+
+        details = "\n".join([str(t) for t in to_be_altered])
+
+        response = self.render("airflow/confirm.html",
+                               message=("Here's the list of task instances you are "
+                                        "about to mark as failed:"),
+                               details=details)
+
+        return response
+
+
     @expose('/tree')
     @login_required
     @wwwutils.gzipped
     @wwwutils.action_logging
     def tree(self):
         dag_id = request.args.get('dag_id')
+
+        # 增加限制非有权限的用户dagid，不能查看
+        if ( not wwwutils.get_filter_by_user_dagid(dag_id) ) :
+            return render_template('airflow/circles.html', hostname=socket.getfqdn())
+
         blur = conf.getboolean('webserver', 'demo_mode')
         dag = dagbag.get_dag(dag_id)
         root = request.args.get('root')
@@ -1280,6 +1367,10 @@ class Airflow(BaseView):
     def graph(self):
         session = settings.Session()
         dag_id = request.args.get('dag_id')
+        # 增加限制非有权限的用户dagid，不能查看
+        if ( not wwwutils.get_filter_by_user_dagid(dag_id) ) :
+            return render_template('airflow/circles.html', hostname=socket.getfqdn())
+
         blur = conf.getboolean('webserver', 'demo_mode')
         dag = dagbag.get_dag(dag_id)
         if dag_id not in dagbag.dags:
@@ -1392,6 +1483,11 @@ class Airflow(BaseView):
     def duration(self):
         session = settings.Session()
         dag_id = request.args.get('dag_id')
+        
+        # 增加限制非有权限的用户dagid，不能查看
+        if ( not wwwutils.get_filter_by_user_dagid(dag_id) ) :
+            return render_template('airflow/circles.html', hostname=socket.getfqdn())
+
         dag = dagbag.get_dag(dag_id)
         base_date = request.args.get('base_date')
         num_runs = request.args.get('num_runs')
@@ -1488,6 +1584,11 @@ class Airflow(BaseView):
     def tries(self):
         session = settings.Session()
         dag_id = request.args.get('dag_id')
+        
+        # 增加限制非有权限的用户dagid，不能查看
+        if ( not wwwutils.get_filter_by_user_dagid(dag_id) ) :
+            return render_template('airflow/circles.html', hostname=socket.getfqdn())
+
         dag = dagbag.get_dag(dag_id)
         base_date = request.args.get('base_date')
         num_runs = request.args.get('num_runs')
@@ -1552,6 +1653,11 @@ class Airflow(BaseView):
     def landing_times(self):
         session = settings.Session()
         dag_id = request.args.get('dag_id')
+        
+        # 增加限制非有权限的用户dagid，不能查看
+        if ( not wwwutils.get_filter_by_user_dagid(dag_id) ) :
+            return render_template('airflow/circles.html', hostname=socket.getfqdn())
+
         dag = dagbag.get_dag(dag_id)
         base_date = request.args.get('base_date')
         num_runs = request.args.get('num_runs')
@@ -1649,6 +1755,11 @@ class Airflow(BaseView):
     def refresh(self):
         DagModel = models.DagModel
         dag_id = request.args.get('dag_id')
+        
+        # 增加限制非有权限的用户dagid，不能查看
+        if ( not wwwutils.get_filter_by_user_dagid(dag_id) ) :
+            return render_template('airflow/circles.html', hostname=socket.getfqdn())
+
         session = settings.Session()
         orm_dag = session.query(
             DagModel).filter(DagModel.dag_id == dag_id).first()
@@ -1677,6 +1788,11 @@ class Airflow(BaseView):
     def gantt(self):
         session = settings.Session()
         dag_id = request.args.get('dag_id')
+
+        # 增加限制非有权限的用户dagid，不能查看
+        if ( not wwwutils.get_filter_by_user_dagid(dag_id) ) :
+            return render_template('airflow/circles.html', hostname=socket.getfqdn())
+
         dag = dagbag.get_dag(dag_id)
         demo_mode = conf.getboolean('webserver', 'demo_mode')
 
@@ -1701,7 +1817,9 @@ class Airflow(BaseView):
         tis = sorted(tis, key=lambda ti: ti.start_date)
 
         tasks = []
+        tasksUniq = set() # set 
         for ti in tis:
+            tasksUniq.add(ti.task_id) # new add 
             end_date = ti.end_date if ti.end_date else datetime.now()
             tasks.append({
                 'startDate': wwwutils.epoch(ti.start_date),
@@ -1714,11 +1832,22 @@ class Airflow(BaseView):
                 'executionDate': ti.execution_date.isoformat(),
             })
         states = {ti.state:ti.state for ti in tis}
+
+
+        if len(tasksUniq) < 2 :
+            height = len(tasksUniq) * 45 + 35
+        elif len(tasksUniq) < 3 :
+            height = len(tasksUniq) * 45 + 25
+        elif len(tasksUniq) < 4 :
+            height = len(tasksUniq) * 45 + 15
+        else : 
+            height = len(tasksUniq) * 45
+
         data = {
             'taskNames': [ti.task_id for ti in tis],
             'tasks': tasks,
             'taskStatus': states,
-            'height': len(tis) * 25,
+            'height': height,
         }
 
         session.commit()
@@ -1887,7 +2016,8 @@ class HomeView(AdminIndexView):
             webserver_dags=webserver_dags,
             orm_dags=orm_dags,
             hide_paused=hide_paused,
-            all_dag_ids=all_dag_ids)
+            all_dag_ids=all_dag_ids,
+            nowtime=datetime.now(),)
 
 
 class QueryView(wwwutils.DataProfilingMixin, BaseView):
@@ -2262,11 +2392,11 @@ class JobModelView(wwwutils.SuperUserMixin, ModelViewOnly):
 
 
 class DagRunModelView(ModelViewOnly):
-    verbose_name_plural = "DAG Instances"
+    verbose_name_plural = "Dag Runs"
     can_edit = True
     #can_create = True
     #column_editable_list = ('state',)
-    verbose_name = "dag run"
+    verbose_name = "Dag Runs"
     column_default_sort = ('execution_date', True)
     form_choices = {
         'state': [
@@ -2293,6 +2423,21 @@ class DagRunModelView(ModelViewOnly):
         'run_id': "trigger_type",
 
     }
+
+    def get_query(self):
+        dags=wwwutils.get_filter_by_user_dagids_detail()
+        if (dags):
+            return ( super(DagRunModelView, self).get_query().filter(DagRun.dag_id.in_(dags) ) )
+        else:
+            return ( super(DagRunModelView, self) .get_query() )
+
+    def get_count_query(self):
+        dags=wwwutils.get_filter_by_user_dagids_detail()
+        if (dags):
+            return ( super(DagRunModelView, self).get_count_query().filter(DagRun.dag_id.in_(dags) ) )
+        else:
+            return ( super(DagRunModelView, self).get_count_query() )
+
 
     @action('new_delete', "Delete", "Are you sure you want to delete selected records?")
     def action_new_delete(self, ids):
@@ -2346,7 +2491,7 @@ class DagRunModelView(ModelViewOnly):
             flash('Failed to set state', 'error')
 
 
-class LogModelView(ModelViewOnly):
+class LogModelView(wwwutils.SuperUserMixin,ModelViewOnly):
     verbose_name_plural = "logs"
     verbose_name = "log"
     column_display_actions = False
@@ -2359,8 +2504,8 @@ class LogModelView(ModelViewOnly):
 # column_formatters:dag_instance_link,duration_f
 # column_list
 class TaskInstanceModelView(ModelViewOnly):
-    verbose_name_plural = "task instances"
-    verbose_name = "task instance"
+    verbose_name_plural = "Task Runs"
+    verbose_name = "Task Runs"
     column_filters = (
         'state', 'dag_id', 'task_id', 'execution_date', 'hostname',
         'queue', 'pool', 'operator', 'start_date', 'end_date')
@@ -2474,6 +2619,19 @@ class TaskInstanceModelView(ModelViewOnly):
         execution_date = dateutil.parser.parse(execution_date)
         return self.session.query(self.model).get((task_id, dag_id, execution_date))
 
+    def get_query(self):
+        dags=wwwutils.get_filter_by_user_dagids_detail()
+        if (dags):
+            return ( super(TaskInstanceModelView, self).get_query().filter(TaskInstance.dag_id.in_(dags) ) )
+        else:
+            return ( super(TaskInstanceModelView, self) .get_query() )
+
+    def get_count_query(self):
+        dags=wwwutils.get_filter_by_user_dagids_detail()
+        if (dags):
+            return ( super(TaskInstanceModelView, self).get_count_query().filter(TaskInstance.dag_id.in_(dags) ) )
+        else:
+            return ( super(TaskInstanceModelView, self).get_count_query() )
 
 class ConnectionModelView(wwwutils.SuperUserMixin, AirflowModelView):
     create_template = 'airflow/conn_create.html'

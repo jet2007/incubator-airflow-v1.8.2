@@ -17,6 +17,7 @@ standard_library.install_aliases()
 from builtins import str
 from builtins import object
 
+import logging
 from cgi import escape
 from io import BytesIO as IO
 import functools
@@ -30,7 +31,9 @@ from flask_login import current_user
 import wtforms
 from wtforms.compat import text_type
 
+import airflow
 from airflow import configuration, models, settings
+from airflow.settings import Session
 from airflow.utils.json import AirflowJsonEncoder
 
 AUTHENTICATE = configuration.getboolean('webserver', 'AUTHENTICATE')
@@ -60,6 +63,95 @@ class DataProfilingMixin(object):
             not AUTHENTICATE or
             (not current_user.is_anonymous() and current_user.data_profiling())
         )
+
+
+# 是否需要对用户进行页面限制(非superuser,FILTER_BY_OWNER=true,owner_mode=user)
+# 获取是否有dcmp插件且非superuser
+# ldapgroup方式是没有处理
+# dcmp插件 才做用户限制
+def get_filter_by_user():
+    FILTER_BY_OWNER = False
+    curr_user = airflow.login.current_user
+    if configuration.getboolean('webserver', 'FILTER_BY_OWNER'):
+        # filter_by_owner if authentication is enabled and filter_by_owner is true
+        FILTER_BY_OWNER = True
+    do_filter = FILTER_BY_OWNER and (not curr_user.is_superuser() )
+    owner_mode = configuration.get('webserver', 'OWNER_MODE').strip().lower()
+    session = Session()
+    # dcmp插件是否存在
+    dcmp_flag = False
+    try:
+        res = session.execute(""" 
+                                     SELECT dag_name 
+                                       FROM dcmp_dag 
+                                      WHERE last_editor_user_id  IN ( 
+                                                    select user_id 
+                                                      from dcmp_user_profile 
+                                                )
+                                 """ )
+        dcmp_flag = True
+    except Exception, e:
+        dcmp_flag = False
+    # ldapgroup方式是没有处理
+
+
+    return (do_filter) and ( owner_mode == 'user') and ( dcmp_flag )
+
+
+
+## dagid 是否为用户的dagid
+# ldapgroup方式是没有处理
+# dcmp插件 才做用户限制
+def get_filter_by_user_dagid(dagid):
+    res=get_filter_by_user()
+    curr_user = airflow.login.current_user
+    session = Session()
+    if res :
+        result = session.execute(""" 
+                                     SELECT dag_name 
+                                       FROM dcmp_dag 
+                                      WHERE last_editor_user_id = %s 
+                                 """  %   curr_user.user.id )
+        if result.rowcount > 0:
+            records = result.fetchall()
+            dags=[]
+            for x in records:
+                dags.append(x.dag_name)
+            return ( dagid in dags )  # dagid 是否为用为的dagid
+        else:
+            return False
+        session.close()
+    else:
+        # 无限制
+        return True
+
+
+
+## dagid 是否为用户的dagid
+# ldapgroup方式是没有处理
+# dcmp插件 才做用户限制
+def get_filter_by_user_dagids_detail():
+    res=get_filter_by_user()
+    curr_user = airflow.login.current_user
+    session = Session()
+    dags=[]
+    if res :
+        result = session.execute(""" 
+                                     SELECT dag_name 
+                                       FROM dcmp_dag 
+                                      WHERE last_editor_user_id  IN ( 
+                                                    select user_id 
+                                                      from dcmp_user_profile 
+                                                     where user_id = %s 
+                                                )
+                                 """  %   curr_user.user.id )
+        if result.rowcount > 0:
+            records = result.fetchall()
+        session.close()
+        for x in records:
+            dags.append(x.dag_name)
+    return dags
+
 
 
 def limit_sql(sql, limit, conn_type):
